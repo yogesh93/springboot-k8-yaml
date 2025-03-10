@@ -12,10 +12,16 @@ public class SpringbootK8sDemoApplication {
 
 	@GetMapping("/message")
 	public String DisplayCode(){
-		
+
 		return "Congratulation you successfully deployed your application to kubernetes !!";
 	}
 
+	@GetMapping("/message1")
+	public String DisplayCOde123() {
+
+		return "Congratulation you successfully deployed your application to kubernetes !!";
+		
+	}
 	public static void main(String[] args) {
 		SpringApplication.run(SpringbootK8sDemoApplication.class, args);
 	}
