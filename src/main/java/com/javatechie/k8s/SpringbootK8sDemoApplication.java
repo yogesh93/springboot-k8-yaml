@@ -28,7 +28,7 @@ public class SpringbootK8sDemoApplication {
 		String a32 = "Congratulation you successfully deployed your application to kubernetes !!";
 		String a34 = "Congratulation you successfully deployed your application to kubernetes !!";
 		String a4 = "Congratulation you successfully deployed your application to kubernetes !!";
-		String a4 = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a456 = "Congratulation you successfully deployed your application to kubernetes !!";
 		String a3 = "Congratulation you successfully deployed your application to kubernetes !!";
 		return "Congratulation you successfully deployed your application to kubernetes !!";
 	}
