@@ -18,9 +18,19 @@ public class SpringbootK8sDemoApplication {
 
 	@GetMapping("/message1")
 	public String DisplayCOde123() {
-
 		return "Congratulation you successfully deployed your application to kubernetes !!";
-		
+
+	}
+	@GetMapping("/message1")
+	public String DisplayCOde123() {
+		String a = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a1 = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a32 = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a34 = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a4 = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a4 = "Congratulation you successfully deployed your application to kubernetes !!";
+		String a3 = "Congratulation you successfully deployed your application to kubernetes !!";
+		return "Congratulation you successfully deployed your application to kubernetes !!";
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(SpringbootK8sDemoApplication.class, args);
