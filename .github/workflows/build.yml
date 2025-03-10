@@ -42,4 +42,13 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+
+      - name: SonarCloud Quality Gate Check
+        run: |
+          STATUS=$(curl -s -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=my-project-key" | jq -r .projectStatus.status)
+          if [[ "$STATUS" != "OK" ]]; then
+            echo "❌ SonarCloud Quality Gate failed!"
+            exit 1  # This blocks the PR
+          fi
+          
