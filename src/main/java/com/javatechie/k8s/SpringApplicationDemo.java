@@ -21,7 +21,6 @@ public class SpringApplicationDemo {
 	public ResponseEntity<Object> getCall() {
 		return ResponseEntity.ok("GET content");
 	}
-
 	public static void main(String[] args) {
 		SpringApplication.run(SpringApplicationDemo.class, args);
 	}
