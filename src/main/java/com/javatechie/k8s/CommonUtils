@@ -1,0 +1,165 @@
+package com.javatechie.k8s;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.birdeye.ambassador.ui.business.request.BusinessMetaDetail;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
+
+import com.birdeye.ambassador.enums.BusinessType;
+import com.birdeye.ambassador.ui.request.common.GlobalFilter;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpHeaders;
+
+@Slf4j
+public class CommonUtils {
+
+	private CommonUtils() {
+	}
+
+	private static EmailValidator emailValidator = EmailValidator.getInstance();
+
+	private static final String EMAIL_PATTERN = "^[a-zA-Z0-9_+&*-]+(?:\\." + "[a-zA-Z0-9_+&*-]+)*@"
+			+ "(?:[a-zA-Z0-9-]+\\.)+[a-z" + "A-Z]{2,7}$";
+
+	private static final Pattern AMAZON_S3_BUCKET_PATTERN = Pattern.compile("https://(.*?).s3", Pattern.DOTALL);
+	private static final Pattern AMAZON_S3_OBJECT_KEY_PATTERN_PRIVATE = Pattern.compile("amazonaws.com", Pattern.DOTALL);
+
+	public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+		Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+		return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	public static boolean isEmailValid(String emailId) {
+		if (emailId.toLowerCase().endsWith(".llc")) {
+			Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+			return pattern.matcher(emailId).matches();
+		}
+		return emailValidator.isValid(emailId);
+	}
+
+	public static Boolean isAllTimeFilterSelected(GlobalFilter filter) {
+		if(ObjectUtils.isEmpty(filter.getMonths()) && ObjectUtils.isEmpty(filter.getDays()) &&
+				ObjectUtils.isEmpty(filter.getMinutes()) && StringUtils.isBlank(filter.getStartDate()) &&
+				ObjectUtils.isEmpty(filter.getWeek()) && ObjectUtils.isEmpty(filter.getLastMonth()) &&
+				ObjectUtils.isEmpty(filter.getLastYear())) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isLocationOrSmb(String businessType) {
+		return BusinessType.BUSINESS.getType().equalsIgnoreCase(businessType) || BusinessType.PRODUCT.getType().equalsIgnoreCase(businessType);
+	}
+
+	public static String extractBusinessNumber(String businessNumber) {
+		if(StringUtils.isEmpty(businessNumber))
+			return businessNumber;
+		return businessNumber.replace("_1","");
+	}
+
+	public static boolean isSmb(Integer accountId, Integer businessId, String businessType) {
+		return Objects.nonNull(accountId) && Objects.nonNull(businessId) && businessId.equals(accountId) && isLocationOrSmb(businessType);
+	}
+
+	public static boolean isLocation(Integer accountId, Integer businessId, String businessType) {
+		return Objects.nonNull(accountId) && Objects.nonNull(businessId) && !businessId.equals(accountId) && isLocationOrSmb(businessType);
+	}
+
+	public static String extractEmailDomain(String email) {
+		return StringUtils.substringAfter(email, "@");
+	}
+
+	public static String getEncodedQueryParamValue(String value) {
+		if(StringUtils.isNotEmpty(value))
+			return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%2B");
+		return value;
+	}
+
+	public static String getFormattedBusinessPhone(String phone) {
+		try {
+			if(StringUtils.isNotBlank(phone)) {
+				int index = phone.lastIndexOf("ext");
+				if (index != -1) {
+					return phone.substring(0, index - 1);
+				}
+			}
+		} catch (Exception e) {
+			log.info("Error in formatting phone for listing scan: {0}", e);
+		}
+		return phone;
+	}
+
+	public static String formatZipCode(String zipcode, String countryCode) {
+		String formattedZipCode = zipcode;
+		String dash = "-";
+		if (StringUtils.isBlank(countryCode)) {
+			countryCode = "US";
+		}
+		if ("US".equalsIgnoreCase(countryCode) && StringUtils.isNotBlank(zipcode)) {
+			if (StringUtils.containsIgnoreCase(zipcode, dash)) {
+				formattedZipCode = zipcode.substring(0, zipcode.indexOf(dash));
+			}
+			if (StringUtils.length(formattedZipCode) != 5) {
+				int stringLength = formattedZipCode.length();
+				for (int i = 0; i < 5 - stringLength; i++) {
+					formattedZipCode = "0" + formattedZipCode;
+				}
+			}
+		}
+		return formattedZipCode;
+	}
+
+	public static boolean isEnterpriseLocation(Integer accountId, Integer businessId, String businessType) {
+		return Objects.nonNull(accountId) && Objects.nonNull(businessId) && !businessId.equals(accountId)
+				&& (BusinessType.BUSINESS.getType().equalsIgnoreCase(businessType)
+				|| BusinessType.PRODUCT.getType().equalsIgnoreCase(businessType));
+	}
+
+	public static boolean isEnterprise(String businessType) {
+		return (BusinessType.ENTERPRISE_LOCATION.getType().equalsIgnoreCase(businessType)
+				|| BusinessType.ENTERPRISE_PRODUCT.getType().equalsIgnoreCase(businessType));
+	}
+
+	public static boolean isReseller(String businessType) {
+		return  BusinessType.RESELLER.getType().equalsIgnoreCase(businessType);
+	}
+
+	public static HttpHeaders createHeaders(String emailId) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Access-Control-Allow-Credentials", "true");
+		headers.add("Access-Control-Expose-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token");
+		headers.add("Access-Control-Expose-Headers", "AMP-Access-Control-Allow-Source-Origin");
+		headers.add("Content-Type", "application/json");
+		headers.add("AMP-Access-Control-Allow-Source-Origin", emailId);
+		return headers;
+	}
+
+	public static BusinessMetaDetail getAwsS3MetadataFromS3Url(String s3Url) {
+		String bucket = null;
+		String objectKey = null;
+
+		Matcher matcher = AMAZON_S3_BUCKET_PATTERN.matcher(s3Url);
+		while (matcher.find()) {
+			bucket = matcher.group(1);
+		}
+		Matcher objectKeyMatcher = AMAZON_S3_OBJECT_KEY_PATTERN_PRIVATE.matcher(s3Url);
+		if (objectKeyMatcher.find()) {
+			objectKey = s3Url.substring(objectKeyMatcher.end() + 1);
+		}
+		return BusinessMetaDetail.builder().bucket(bucket).fileName(objectKey).build();
+	}
+
+}

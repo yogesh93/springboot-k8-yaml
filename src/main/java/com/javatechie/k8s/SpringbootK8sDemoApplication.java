@@ -10,11 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SpringbootK8sDemoApplication {
 
-	@GetMapping("/message")
-	public String DisplayCode(){
 
-		return "Congratulation you successfully deployed your application to kubernetes !!";
-	}
 
 	@GetMapping("/message1")
 	public String DisplayCOde123() {
