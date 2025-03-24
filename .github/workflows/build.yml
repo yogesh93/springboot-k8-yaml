@@ -12,6 +12,9 @@ jobs:
   sonar:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write  # Allows SonarCloud to post comments in PRs
+      contents: read
 
     steps:
       - name: Checkout code
