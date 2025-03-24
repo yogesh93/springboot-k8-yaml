@@ -9,5 +9,4 @@ class SpringbootK8sDemoApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
