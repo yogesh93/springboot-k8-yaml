@@ -40,6 +40,5 @@ class SpringApplicationDemoTest {
     @Test
     void contextLoads() {
     }
-    
 
 }
