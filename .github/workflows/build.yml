@@ -37,7 +37,7 @@ jobs:
 
       - name: SonarCloud Scan
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAT }}
         run: |
           mvn -B verify sonar:sonar \
             -Dsonar.projectKey=yogesh93_springboot-k8-yaml \
