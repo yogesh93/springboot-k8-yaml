@@ -35,10 +35,11 @@ class SpringApplicationDemoTest {
         // Test the main method
         SpringApplicationDemo.main(new String[]{});
     }
-    
+
 
     @Test
     void contextLoads() {
     }
+    
 
 }
